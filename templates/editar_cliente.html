@@ -1,0 +1,100 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Editar Cliente | Service Hub</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+
+    <aside class="sidebar">
+
+        <div class="logo">
+            <span>SH</span>
+            <h2>Service Hub</h2>
+        </div>
+
+        <nav>
+            <a href="{{ url_for('inicio') }}">Dashboard</a>
+            <a href="{{ url_for('clientes') }}" class="active">Clientes</a>
+            <a href="{{ url_for('equipamentos') }}">Equipamentos</a>
+            <a href="{{ url_for('ordens_servico') }}">Ordens de Serviço</a>
+            <a href="{{ url_for('historico') }}">Histórico</a>
+        </nav>
+
+        <div class="sidebar-footer">
+            Sistema de Gestão
+            <small>Versão 1.0</small>
+        </div>
+
+    </aside>
+
+    <main class="main-content">
+
+        <header class="topbar">
+            <div>
+                <h1>Editar cliente</h1>
+                <p>Atualize as informações do cliente cadastrado.</p>
+            </div>
+        </header>
+
+        <section class="orders">
+
+            <div class="section-heading">
+                <h2>Dados do cliente #{{ cliente.id }}</h2>
+            </div>
+
+            <form method="POST" class="client-form">
+
+                <label for="nome">Nome completo</label>
+
+                <input
+                    type="text"
+                    id="nome"
+                    name="nome"
+                    value="{{ cliente.nome }}"
+                    required
+                >
+
+                <label for="telefone">Telefone</label>
+
+                <input
+                    type="tel"
+                    id="telefone"
+                    name="telefone"
+                    value="{{ cliente.telefone }}"
+                    required
+                >
+
+                <label for="email">E-mail</label>
+
+                <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    value="{{ cliente.email or '' }}"
+                >
+
+                <button type="submit">
+                    Salvar alterações
+                </button>
+
+                <a class="cancel-link"
+                   href="{{ url_for('clientes') }}">
+                    Cancelar e voltar
+                </a>
+
+            </form>
+
+        </section>
+
+    </main>
+
+</body>
+</html>

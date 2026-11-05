@@ -1,0 +1,17 @@
+# Ambiente virtual
+.venv/
+
+# Banco de dados local
+*.db
+*.sqlite
+*.sqlite3
+
+# Arquivos Python temporários
+__pycache__/
+*.py[cod]
+
+# Configurações e segredos
+.env
+
+# Arquivos de limpeza de teste
+limpar_banco.py

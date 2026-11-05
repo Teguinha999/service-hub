@@ -1,0 +1,136 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Service Hub</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+    <aside class="sidebar">
+        <div class="logo">
+            <span>SH</span>
+            <h2>Service Hub</h2>
+        </div>
+
+        <nav>
+    <a href="{{ url_for('inicio') }}" class="active">Dashboard</a>
+    <a href="{{ url_for('clientes') }}">Clientes</a>
+    <a href="{{ url_for('equipamentos') }}">Equipamentos</a>
+    <a href="{{ url_for('ordens_servico') }}">Ordens de Serviço</a>
+    <a href="{{ url_for('historico') }}">Histórico</a>
+</nav>
+
+        <div class="sidebar-footer">
+            Sistema de Gestão
+            <small>Versão 1.0</small>
+        </div>
+    </aside>
+
+    <main class="main-content">
+
+        <header class="topbar">
+            <div>
+                <h1>Dashboard</h1>
+                <p>Bem-vindo ao Service Hub</p>
+            </div>
+
+            <div class="user">
+                <span>Administrador</span>
+                <div class="avatar">A</div>
+            </div>
+        </header>
+
+        <section class="welcome">
+            <h2>Visão geral</h2>
+            <p>Acompanhe as atividades da sua assistência técnica.</p>
+        </section>
+
+        <section class="cards">
+
+            <div class="card">
+    <span>Clientes cadastrados</span>
+    <strong>{{ total_clientes }}</strong>
+    <small>Total de clientes</small>
+            </div>
+
+            <div class="card">
+                <span>Equipamentos</span>
+                <strong>{{ total_equipamentos }}</strong>
+                <small>Total registrado</small>
+            </div>
+
+            <div class="card">
+                <span>Ordens em andamento</span>
+                <strong>{{ ordens_andamento }}</strong>
+                <small>Serviços ativos</small>
+            </div>
+
+            <div class="card">
+                <span>Concluídas</span>
+                <strong>{{ ordens_concluidas }}</strong>
+                <small>Serviços finalizados</small>
+            </div>
+
+        </section>
+
+        <section class="orders">
+            <div class="section-heading">
+                <h2>Ordens de serviço recentes</h2>
+                <span>Últimos registros</span>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nº OS</th>
+                        <th>Cliente</th>
+                        <th>Telefone</th>
+                        <th>Equipamento</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for ordem in ordens_recentes %}
+                    <tr>
+                        <td>OS-{{ "%06d"|format(ordem.id) }}</td>
+
+                        <td>{{ ordem.nome_cliente }}</td>
+
+                        <td>{{ ordem.telefone_cliente }}</td>
+
+                        <td>
+                            {{ ordem.tipo }}
+                            {% if ordem.marca %} - {{ ordem.marca }}{% endif %}
+                            {% if ordem.modelo %} {{ ordem.modelo }}{% endif %}
+                        </td>
+
+                        <td>
+                            {% if ordem.status == "Concluída" %}
+                                <span class="status completed">{{ ordem.status }}</span>
+                            {% elif ordem.status == "Em andamento" %}
+                                <span class="status progress">{{ ordem.status }}</span>
+                            {% else %}
+                                <span class="status waiting">{{ ordem.status }}</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+
+                    {% else %}
+                    <tr>
+                        <td colspan="5">Nenhuma ordem de serviço cadastrada.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </section>
+
+    </main>
+
+</body>
+</html>

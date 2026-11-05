@@ -1,0 +1,92 @@
+
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar Ordem de Serviço | Service Hub</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+    <div class="sidebar">
+        <h2>Service Hub</h2>
+
+        <nav>
+            <a href="{{ url_for('inicio') }}">Dashboard</a>
+            <a href="{{ url_for('clientes') }}">Clientes</a>
+            <a href="{{ url_for('equipamentos') }}">Equipamentos</a>
+            <a href="{{ url_for('ordens_servico') }}" class="active">Ordens de Serviço</a>
+            <a href="{{ url_for('historico') }}">Histórico</a>
+        </nav>
+    </div>
+
+    <main class="main-content">
+
+        <header class="topbar">
+            <h1>Editar ordem de serviço</h1>
+        </header>
+
+        <section class="content-section">
+
+            <div class="section-header">
+                <h2>OS-{{ "%06d"|format(ordem.id) }}</h2>
+                <p>Cliente: {{ ordem.nome_cliente }}</p>
+                <p>Equipamento: {{ ordem.tipo }} {{ ordem.marca or '' }} {{ ordem.modelo or '' }}</p>
+                <p>Número de série: {{ ordem.numero_serie or 'Não informado' }}</p>
+            </div>
+
+            <form method="POST" class="client-form"
+                  onsubmit="return confirm('Confirma as alterações desta ordem de serviço?');">
+
+                <div class="form-group">
+                    <label>Problema relatado</label>
+                    <textarea name="problema" required>{{ ordem.problema }}</textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Diagnóstico técnico</label>
+                    <textarea name="diagnostico">{{ ordem.diagnostico or '' }}</textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Valor do serviço (R$)</label>
+                    <input type="text" name="valor"
+                           value="{{ ordem.valor }}" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Status da ordem</label>
+
+                    <select name="status" required>
+                        {% for status in ["Aguardando", "Aguardando orçamento", "Em andamento", "Concluída"] %}
+                            <option value="{{ status }}"
+                                {% if ordem.status == status %}selected{% endif %}>
+                                {{ status }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Motivo da alteração (obrigatório)</label>
+                    <textarea name="motivo"
+                              placeholder="Explique por que essas informações estão sendo alteradas..."
+                              required></textarea>
+                </div>
+
+                <button type="submit">Salvar alterações</button>
+
+                <a href="{{ url_for('ordens_servico') }}" class="cancel-button">
+                    Cancelar e voltar
+                </a>
+
+            </form>
+
+        </section>
+
+    </main>
+
+</body>
+</html>

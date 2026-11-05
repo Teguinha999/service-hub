@@ -1,0 +1,106 @@
+
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Histórico de Alterações | Service Hub</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+
+    <div class="sidebar">
+        <h2>Service Hub</h2>
+
+        <nav>
+            <a href="{{ url_for('inicio') }}">Dashboard</a>
+            <a href="{{ url_for('clientes') }}">Clientes</a>
+            <a href="{{ url_for('equipamentos') }}">Equipamentos</a>
+            <a href="{{ url_for('ordens_servico') }}">Ordens de Serviço</a>
+            <a href="{{ url_for('historico') }}" class="active">Histórico</a>
+        </nav>
+    </div>
+
+    <main class="main-content">
+
+        <header class="topbar">
+            <h1>Histórico de alterações</h1>
+        </header>
+
+        <section class="content-section">
+
+            <div class="section-header">
+                <h2>Registro de auditoria</h2>
+                <p>
+                    Consulte as modificações realizadas nas ordens de serviço.
+                </p>
+            </div>
+
+            <div class="table-container">
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Ordem</th>
+                            <th>Cliente</th>
+                            <th>Campo alterado</th>
+                            <th>Valor anterior</th>
+                            <th>Novo valor</th>
+                            <th>Motivo</th>
+                            <th>Responsável</th>
+                            <th>Data da alteração</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        {% for registro in registros %}
+
+                        <tr>
+                            <td>
+                                {% if registro.tipo_registro == 'ordem' %}
+                                    OS-{{ "%06d"|format(registro.numero_ordem) }}
+                                {% else %}
+                                    Cliente
+                                {% endif %}
+                            </td>
+
+                            <td>{{ registro.nome_cliente }}</td>
+
+                            <td>{{ registro.campo_alterado }}</td>
+
+                            <td>{{ registro.valor_anterior or '-' }}</td>
+
+                            <td>{{ registro.novo_valor or '-' }}</td>
+
+                            <td>{{ registro.motivo }}</td>
+
+                            <td>{{ registro.responsavel }}</td>
+
+                            <td>{{ registro.data_evento }}</td>
+                        </tr>
+
+                        {% else %}
+
+                        <tr>
+                            <td colspan="8">
+                                Nenhum registro encontrado até o momento.
+                            </td>
+                        </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+                </table>
+
+            </div>
+
+        </section>
+
+    </main>
+
+</body>
+</html>

@@ -1,0 +1,158 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clientes | Service Hub</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+    <aside class="sidebar">
+        <div class="logo">
+            <span>SH</span>
+            <h2>Service Hub</h2>
+        </div>
+
+        <nav>
+            <a href="{{ url_for('inicio') }}">Dashboard</a>
+            <a href="{{ url_for('clientes') }}" class="active">Clientes</a>
+            <a href="{{ url_for('equipamentos') }}">Equipamentos</a>
+            <a href="{{ url_for('ordens_servico') }}">Ordens de Serviço</a>
+            <a href="{{ url_for('historico') }}">Histórico</a>
+        </nav>
+
+        <div class="sidebar-footer">
+            Sistema de Gestão
+            <small>Versão 1.0</small>
+        </div>
+    </aside>
+
+    <main class="main-content">
+
+        {% with mensagens = get_flashed_messages(with_categories=true) %}
+    {% for categoria, mensagem in mensagens %}
+        <div class="mensagem {{ categoria }}">
+            {{ mensagem }}
+        </div>
+    {% endfor %}
+{% endwith %}
+
+        <header class="topbar">
+            <div>
+                <h1>Clientes</h1>
+                <p>Gerencie os clientes da assistência técnica.</p>
+            </div>
+        </header>
+
+        <section class="orders">
+            <div class="section-heading">
+                <h2>Novo cliente</h2>
+            </div>
+
+            <form method="POST" class="client-form">
+
+                <label for="nome">Nome completo</label>
+                <input type="text" id="nome" name="nome"
+                       placeholder="Digite o nome do cliente" required>
+
+                <label for="telefone">Telefone</label>
+                <input type="tel" id="telefone" name="telefone"
+                       placeholder="(11) 99999-9999" required>
+
+                <label for="email">E-mail</label>
+                <input type="email" id="email" name="email"
+                       placeholder="cliente@email.com">
+
+                <button type="submit">Cadastrar cliente</button>
+
+            </form>
+        </section>
+
+        <section class="orders client-list">
+
+            <div class="section-heading">
+                <h2>Clientes cadastrados</h2>
+                
+<form method="GET"
+      action="{{ url_for('clientes') }}"
+      class="search-form">
+
+    <input
+        type="text"
+        name="q"
+        placeholder="Pesquisar por nome, telefone ou e-mail..."
+        value="{{ request.args.get('q', '') }}"
+    >
+
+    <button type="submit">
+        Pesquisar
+    </button>
+
+    <a href="{{ url_for('clientes') }}">
+        Limpar
+    </a>
+
+</form>
+
+                <span>{{ clientes|length }} registro(s)</span>
+            </div>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nome</th>
+                            <th>Telefone</th>
+                            <th>E-mail</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for cliente in clientes %}
+                        <tr>
+                            <td>#{{ cliente.id }}</td>
+                            <td>{{ cliente.nome }}</td>
+                            <td>{{ cliente.telefone }}</td>
+                            <td>{{ cliente.email or '-' }}</td>
+                            <td>
+    
+<td>
+    <a class="edit-link"
+       href="{{ url_for('editar_cliente', cliente_id=cliente.id) }}">
+        Editar
+    </a>
+
+    <form method="POST"
+          action="{{ url_for('excluir_cliente', cliente_id=cliente.id) }}"
+          style="display: inline;"
+          onsubmit="return confirm('Tem certeza que deseja excluir este cliente?');">
+
+        <button type="submit" class="delete-button">
+            Excluir
+        </button>
+
+    </form>
+</td>
+
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="4">Nenhum cliente cadastrado.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+        </section>
+
+    </main>
+
+</body>
+</html>

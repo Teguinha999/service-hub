@@ -1,0 +1,432 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ordens de Serviço | Service Hub</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+    <aside class="sidebar">
+        <div class="logo">
+            <span>SH</span>
+            <h2>Service Hub</h2>
+        </div>
+
+        <nav>
+            <a href="{{ url_for('inicio') }}">Dashboard</a>
+            <a href="{{ url_for('clientes') }}">Clientes</a>
+            <a href="{{ url_for('equipamentos') }}">Equipamentos</a>
+            <a href="{{ url_for('ordens_servico') }}" class="active">Ordens de Serviço</a>
+            <a href="{{ url_for('historico') }}">Histórico</a>
+        </nav>
+    </aside>
+
+    <main class="main-content">
+
+        <header class="topbar">
+            <div>
+                <h1>Ordens de Serviço</h1>
+                <p>Gerencie os atendimentos e serviços técnicos.</p>
+            </div>
+        </header>
+
+        <section class="content-section">
+
+            <div class="section-header">
+                <h2>Abrir nova ordem de serviço</h2>
+            </div>
+
+            <form method="POST" class="client-form">
+
+                
+<div class="form-group">
+    <label for="buscar_equipamento">
+        Pesquisar cliente ou telefone
+    </label>
+
+    <div class="client-picker">
+        <input
+            type="text"
+            id="buscar_equipamento"
+            class="client-search-input"
+            placeholder="Pesquise por nome, telefone ou número de série/IMEI..."
+            autocomplete="off"
+            required
+        >
+
+        <input
+            type="hidden"
+            name="equipamento_id"
+            id="equipamento_id"
+        >
+
+        <div id="resultado_equipamentos" class="client-results">
+
+            {% for equipamento in equipamentos %}
+            <button
+                type="button"
+                class="equipment-option"
+                data-id="{{ equipamento.id }}"
+                data-search="{{ (equipamento.nome_cliente ~ ' ' ~ equipamento.telefone_cliente ~ ' ' ~ (equipamento.numero_serie or ''))|lower }}"
+                data-label="{{ equipamento.nome_cliente }} - {{ equipamento.tipo }} {{ equipamento.marca or '' }} {{ equipamento.modelo or '' }}"
+            >
+                <strong>{{ equipamento.nome_cliente }}</strong>
+
+                <small>{{ equipamento.telefone_cliente }}</small>
+
+                <small>
+    Série/IMEI: {{ equipamento.numero_serie or 'Não informado' }}
+</small>
+
+                <span>
+                    {{ equipamento.tipo }}
+                    {{ equipamento.marca or '' }}
+                    {{ equipamento.modelo or '' }}
+                </span>
+            </button>
+            {% endfor %}
+
+            <p id="sem_equipamentos" class="no-client-results" hidden>
+                Nenhum cliente ou equipamento encontrado.
+            </p>
+
+        </div>
+    </div>
+
+    <small id="equipamento_selecionado" class="selection-feedback"></small>
+</div>
+
+
+                <div class="form-group">
+                    <label for="problema">Problema relatado</label>
+                    <textarea
+                        name="problema"
+                        id="problema"
+                        rows="4"
+                        placeholder="Descreva o problema informado pelo cliente..."
+                        required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="diagnostico">Diagnóstico técnico</label>
+                    <textarea
+                        name="diagnostico"
+                        id="diagnostico"
+                        rows="4"
+                        placeholder="Descreva o diagnóstico realizado..."
+                    ></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="valor">Valor do serviço (R$)</label>
+                    <input
+                        type="number"
+                        name="valor"
+                        id="valor"
+                        min="0"
+                        step="0.01"
+                        value="0.00"
+                        required>
+                </div>
+
+                <button type="submit" class="primary-button">
+                    Cadastrar ordem de serviço
+                </button>
+
+            </form>
+
+        </section>
+
+        <section class="content-section">
+
+            <div class="section-header">
+                <h2>Ordens cadastradas</h2>
+            </div>
+            <form method="GET" action="{{ url_for('ordens_servico') }}"
+      class="search-form">
+
+    <input
+        type="text"
+        name="q"
+        placeholder="Pesquisar por número da OS, cliente ou equipamento..."
+        value="{{ request.args.get('q', '') }}"
+    >
+
+    <button type="submit">Pesquisar</button>
+
+    {% if request.args.get('q') %}
+        <a href="{{ url_for('ordens_servico') }}">Limpar pesquisa</a>
+    {% endif %}
+
+</form>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Número OS</th>
+                            <th>Editar</th>
+                            <th>Cliente</th>
+                            <th>Equipamento</th>
+                            <th>Problema</th>
+                            <th>Orçamento</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for ordem in ordens %}
+                        <tr>
+                            <td>OS-{{ "%06d"|format(ordem.id) }}</td>
+
+                            <td> 
+                                <a href="{{ url_for('editar_ordem', ordem_id=ordem.id) }}"
+                                class="edit-button">
+                                    Editar
+                                </a>
+                            </td>
+
+                            <td>{{ ordem.nome_cliente }}</td>
+
+                            <td>
+                                {{ ordem.tipo }}
+                                {{ ordem.marca or '' }}
+                                {{ ordem.modelo or '' }}
+                            </td>
+
+                            <td>{{ ordem.problema }}</td>
+
+                            <td>
+                                R$ {{ "%.2f"|format(ordem.valor or 0) }}
+                            </td>
+
+                            
+<td>
+    
+<form action="{{ url_for('atualizar_status_os', ordem_id=ordem.id) }}"
+      method="POST"
+      class="status-form"
+      onsubmit="return validarAlteracaoStatus(this);">
+
+    <select name="status"
+            class="status-select"
+            data-status-original="{{ ordem.status }}"
+            onchange="abrirDialogoStatus(this)">
+
+        <option value="Aguardando"
+            {% if ordem.status == 'Aguardando' %}selected{% endif %}>
+            Aguardando
+        </option>
+
+        <option value="Aguardando orçamento"
+            {% if ordem.status == 'Aguardando orçamento' %}selected{% endif %}>
+            Aguardando orçamento
+        </option>
+
+        <option value="Em andamento"
+            {% if ordem.status == 'Em andamento' %}selected{% endif %}>
+            Em andamento
+        </option>
+
+        <option value="Concluída"
+            {% if ordem.status == 'Concluída' %}selected{% endif %}>
+            Concluída
+        </option>
+
+    </select>
+
+    <input type="hidden" name="motivo" value="">
+
+</form>
+
+</td>
+
+                        </tr>
+
+                        {% else %}
+                        <tr>
+                            <td colspan="6">
+                                Nenhuma ordem de serviço cadastrada.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+        </section>
+
+    </main>
+
+    
+<dialog id="dialogo-status" class="status-dialog">
+
+    <h2>Confirmar alteração de status</h2>
+
+    <p>
+        Você está alterando o status desta ordem de serviço.
+    </p>
+
+    <label for="motivo-status">Motivo da alteração</label>
+
+    <textarea
+        id="motivo-status"
+        rows="4"
+        placeholder="Explique o motivo da alteração..."
+        required></textarea>
+
+    <div class="dialog-actions">
+        <button type="button"
+                onclick="cancelarAlteracaoStatus()">
+            Cancelar
+        </button>
+
+        <button type="button"
+                onclick="confirmarAlteracaoStatus()">
+            Confirmar alteração
+        </button>
+    </div>
+
+</dialog>
+
+<script>
+let formularioStatusAtual = null;
+let statusAnteriorAtual = null;
+
+function abrirDialogoStatus(seletor) {
+    const formulario = seletor.form;
+    const statusAnterior = seletor.dataset.statusOriginal;
+
+    if (seletor.value === statusAnterior) {
+        return;
+    }
+
+    formularioStatusAtual = formulario;
+    statusAnteriorAtual = statusAnterior;
+
+    document.getElementById("motivo-status").value = "";
+
+    document.getElementById("dialogo-status").showModal();
+}
+
+function cancelarAlteracaoStatus() {
+    if (formularioStatusAtual) {
+        const seletor = formularioStatusAtual.querySelector(
+            ".status-select"
+        );
+
+        seletor.value = statusAnteriorAtual;
+    }
+
+    document.getElementById("dialogo-status").close();
+
+    formularioStatusAtual = null;
+    statusAnteriorAtual = null;
+}
+
+function confirmarAlteracaoStatus() {
+    const motivo = document.getElementById("motivo-status").value.trim();
+
+    if (!motivo) {
+        alert("Informe o motivo da alteração.");
+        return;
+    }
+
+    if (formularioStatusAtual) {
+        const formulario = formularioStatusAtual;
+
+        formulario.querySelector('[name="motivo"]').value = motivo;
+
+        formulario.querySelector(".status-select").dataset.statusOriginal =
+            formulario.querySelector(".status-select").value;
+
+        document.getElementById("dialogo-status").close();
+
+        formularioStatusAtual = null;
+        statusAnteriorAtual = null;
+
+        formulario.submit();
+    }
+}
+
+function validarAlteracaoStatus(formulario) {
+    return formulario.querySelector('[name="motivo"]').value.trim() !== "";
+}
+</script>
+</body>
+</html>
+
+</body>
+</html>
+
+<script>
+const campoPesquisa = document.getElementById("buscar_equipamento");
+const campoEquipamentoId = document.getElementById("equipamento_id");
+const resultados = document.getElementById("resultado_equipamentos");
+const mensagemVazia = document.getElementById("sem_equipamentos");
+const selecionado = document.getElementById("equipamento_selecionado");
+
+const opcoes = document.querySelectorAll(".equipment-option");
+
+function filtrarEquipamentos() {
+    const pesquisa = campoPesquisa.value.trim().toLowerCase();
+
+    if (pesquisa.length === 0) {
+        resultados.style.display = "none";
+        return;
+    }
+
+    let encontrados = 0;
+
+    opcoes.forEach(opcao => {
+        const dados = opcao.dataset.search;
+        const corresponde = dados.includes(pesquisa);
+
+        opcao.hidden = !corresponde;
+
+        if (corresponde) encontrados++;
+    });
+
+    mensagemVazia.hidden = encontrados > 0;
+    resultados.style.display = "block";
+}
+
+campoPesquisa.addEventListener("input", () => {
+    campoEquipamentoId.value = "";
+    selecionado.textContent = "";
+
+    filtrarEquipamentos();
+});
+
+opcoes.forEach(opcao => {
+    opcao.addEventListener("click", () => {
+        campoEquipamentoId.value = opcao.dataset.id;
+        campoPesquisa.value = opcao.dataset.label;
+
+        selecionado.textContent = "Equipamento selecionado com sucesso.";
+
+        resultados.style.display = "none";
+    });
+});
+
+document.addEventListener("click", evento => {
+    if (!evento.target.closest(".client-picker")) {
+        resultados.style.display = "none";
+    }
+});
+
+document.querySelector(".client-form").addEventListener("submit", evento => {
+    if (!campoEquipamentoId.value) {
+        evento.preventDefault();
+
+        alert("Pesquise e selecione um equipamento antes de cadastrar a ordem.");
+
+        campoPesquisa.focus();
+    }
+});
+</script>

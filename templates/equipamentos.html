@@ -1,0 +1,313 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Equipamentos | Service Hub</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+
+    <aside class="sidebar">
+
+        <div class="logo">
+            <span>SH</span>
+            <h2>Service Hub</h2>
+        </div>
+
+        <nav>
+            <a href="{{ url_for('inicio') }}">Dashboard</a>
+            <a href="{{ url_for('clientes') }}">Clientes</a>
+            <a href="{{ url_for('equipamentos') }}" class="active">Equipamentos</a>
+            <a href="{{ url_for('ordens_servico') }}">Ordens de Serviço</a>
+            <a href="{{ url_for('historico') }}">Histórico</a>
+        </nav>
+
+        <div class="sidebar-footer">
+            Sistema de Gestão
+            <small>Versão 1.0</small>
+        </div>
+
+    </aside>
+
+    <main class="main-content">
+
+        <header class="topbar">
+            <div>
+                <h1>Equipamentos</h1>
+                <p>Gerencie os equipamentos recebidos pela assistência técnica.</p>
+            </div>
+        </header>
+
+        <section class="orders">
+
+            <div class="section-heading">
+                <h2>Novo equipamento</h2>
+            </div>
+
+            {% if clientes %}
+
+            <form method="POST" class="client-form">
+
+                
+<label for="buscar_cliente">Proprietário do equipamento</label>
+
+<div class="client-picker">
+
+    <input
+        type="text"
+        id="buscar_cliente"
+        class="client-search-input"
+        placeholder="Digite o nome, telefone ou e-mail do cliente..."
+        autocomplete="off"
+        required
+    >
+
+    <input
+        type="hidden"
+        id="cliente_id"
+        name="cliente_id"
+    >
+
+    <div id="resultado_clientes" class="client-results">
+
+        {% for cliente in clientes %}
+
+        <button
+            type="button"
+            class="client-option"
+            data-id="{{ cliente.id }}"
+            data-search="{{ (cliente.nome ~ ' ' ~ cliente.telefone ~ ' ' ~ (cliente.email or ''))|lower }}"
+            data-label="{{ cliente.nome }}"
+        >
+            <strong>{{ cliente.nome }}</strong>
+            <small>{{ cliente.telefone }} · {{ cliente.email or 'Sem e-mail' }}</small>
+        </button>
+
+        {% endfor %}
+
+        <p id="sem_resultados" class="no-client-results" hidden>
+            Nenhum cliente encontrado.
+        </p>
+
+    </div>
+
+</div>
+
+                <label for="tipo">Tipo de equipamento</label>
+
+                <select id="tipo" name="tipo" required>
+                    <option value="">Selecione o tipo</option>
+                    <option value="Notebook">Notebook</option>
+                    <option value="Computador Desktop">Computador Desktop</option>
+                    <option value="Impressora">Impressora</option>
+                    <option value="Monitor">Monitor</option>
+                    <option value="Celular">Celular</option>
+                    <option value="Outro">Outro</option>
+                </select>
+
+                <label for="marca">Marca</label>
+
+                <input
+                    type="text"
+                    id="marca"
+                    name="marca"
+                    placeholder="Ex.: Dell, HP, Lenovo"
+                >
+
+                <label for="modelo">Modelo</label>
+
+                <input
+                    type="text"
+                    id="modelo"
+                    name="modelo"
+                    placeholder="Digite o modelo do equipamento"
+                >
+
+                <label for="numero_serie">Número de série</label>
+
+                <input
+                    type="text"
+                    id="numero_serie"
+                    name="numero_serie"
+                    placeholder="Número de identificação do aparelho"
+                >
+
+                <label for="descricao">Descrição / Observações</label>
+
+                <textarea
+                    id="descricao"
+                    name="descricao"
+                    rows="4"
+                    placeholder="Descreva características ou observações do equipamento"
+                ></textarea>
+
+                <button type="submit">
+                    Cadastrar equipamento
+                </button>
+
+            </form>
+
+            {% else %}
+
+            <p>
+                Nenhum cliente cadastrado.
+                Cadastre um cliente antes de adicionar equipamentos.
+            </p>
+
+            {% endif %}
+
+        </section>
+
+        <section class="orders">
+
+            <div class="section-heading">
+                <h2>Equipamentos cadastrados</h2>
+                <span>{{ equipamentos|length }} registro(s)</span>
+            </div>
+
+            <div class="table-container">
+
+                <table>
+
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Proprietário</th>
+                            <th>Tipo</th>
+                            <th>Marca</th>
+                            <th>Modelo</th>
+                            <th>Número de série</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        {% for equipamento in equipamentos %}
+
+                        <tr>
+                            <td>#{{ equipamento.id }}</td>
+                            <td>{{ equipamento.nome_cliente }}</td>
+                            <td>{{ equipamento.tipo }}</td>
+                            <td>{{ equipamento.marca or '-' }}</td>
+                            <td>{{ equipamento.modelo or '-' }}</td>
+                            <td>{{ equipamento.numero_serie or '-' }}</td>
+                        </tr>
+
+                        {% else %}
+
+                        <tr>
+                            <td colspan="6">
+                                Nenhum equipamento cadastrado.
+                            </td>
+                        </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </section>
+
+    </main>
+
+</body>
+</html>
+
+<script>
+const campoPesquisa = document.getElementById("buscar_cliente");
+const campoClienteId = document.getElementById("cliente_id");
+const resultados = document.getElementById("resultado_clientes");
+const mensagemVazia = document.getElementById("sem_resultados");
+
+const opcoes = document.querySelectorAll(".client-option");
+
+function filtrarClientes() {
+
+    const pesquisa = campoPesquisa.value
+        .trim()
+        .toLowerCase();
+
+    // Não mostra nada enquanto a pesquisa estiver vazia
+    if (pesquisa.length === 0) {
+        resultados.style.display = "none";
+        return;
+    }
+
+    let encontrados = 0;
+
+    opcoes.forEach(opcao => {
+
+        const dados = opcao.dataset.search;
+
+        const corresponde = dados.includes(pesquisa);
+
+        opcao.hidden = !corresponde;
+
+        if (corresponde) {
+            encontrados++;
+        }
+
+    });
+
+    mensagemVazia.hidden = encontrados > 0;
+
+    resultados.style.display = "block";
+}
+
+// Pesquisa enquanto o usuário digita
+campoPesquisa.addEventListener("input", () => {
+
+    campoClienteId.value = "";
+
+    filtrarClientes();
+
+});
+
+// Seleciona o cliente encontrado
+opcoes.forEach(opcao => {
+
+    opcao.addEventListener("click", () => {
+
+        campoClienteId.value = opcao.dataset.id;
+        campoPesquisa.value = opcao.dataset.label;
+
+        resultados.style.display = "none";
+
+    });
+
+});
+
+// Fecha a lista ao clicar fora
+document.addEventListener("click", (evento) => {
+
+    if (!evento.target.closest(".client-picker")) {
+        resultados.style.display = "none";
+    }
+
+});
+
+// Impede cadastro sem selecionar um cliente
+document.querySelector(".client-form").addEventListener("submit", (evento) => {
+
+    if (!campoClienteId.value) {
+
+        evento.preventDefault();
+
+        alert("Pesquise e selecione um cliente antes de cadastrar o equipamento.");
+
+        campoPesquisa.focus();
+
+    }
+
+});
+</script>
